@@ -126,7 +126,7 @@ jar -xvf ${TOMCAT_HOME}/webapps/portal.war > /dev/null
 
 mv ${TOMCAT_HOME}/webapps/portal.war ${TOMCAT_HOME}/webapps/portal.war.current
 
-cp ${SOURCE_DIR}/debian/log4j.properties ${TOMCAT_HOME}/webapps/portal/WEB-INF/
+cp ${SOURCE_DIR}/debian/log4j.properties ${TOMCAT_HOME}/webapps/portal/WEB-INF/classes
 chown -R ${TOMCAT_USER}:${TOMCAT_USER} ${TOMCAT_HOME}/webapps/portal
 log cd to $CURR_DIR
 cd $CURR_DIR
@@ -150,12 +150,12 @@ sed -i.bak  's/\(<param-value>\/var\/lib\/\)tomcat6/\1'tomcat7'/;' ${TOMCAT_HOME
 
 ## switched postgresql host property to localhost (redmine 7943) so this config is not needed anymore
 ## configure to hit only a single PG instance - defualt to first in ip list
-# for ip in ${IPLIST[@]}
-# do
+#for ip in ${IPLIST[@]}
+#do
 #    PG_HOST=${ip}
 #   	sed -i.bak  's/\(host="\)cn\.dataone\.org/\1'${PG_HOST}'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml
 #    break # just use the first
-# done
+#done
 
 ## configure the CILogon skin, default to PRODUCTION
 MYPROXY_ID=myproxy:oa4mp,2012:/client/42afd3477fac2eb9bfe99d0b409f6cc6
