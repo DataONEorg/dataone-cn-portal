@@ -145,6 +145,22 @@ else
 	log "HOSTNAME (cn.router.hostname) cannot be set in ${TOMCAT_HOME}/webapps/portal/WEB-INF/web.xml or ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml"
 fi
 
+############# replace the java key store password in the client.xml file ######################
+
+#first we will try to read it from the dataone-cn-os-core/cn.keystore.password
+db_get dataone-cn-os-core/cn.keystore.password
+
+#if it is blank, we will read it from the input form from the template
+JAVA_KEYSTORE_PASSWORD=$RET
+if [ "$JAVA_KEYSTORE_PASSWORD" = "" ] ;then
+    db_get dataone-cn-portal/cn.keystore.password
+    JAVA_KEYSTORE_PASSWORD=$RET
+    db_reset dataone-cn-portal/cn.keystore.password
+fi
+sed -i.bak  's/\(password=\"\)JAVA_KEYSTORE_PASSWORD/\1'${JAVA_KEYSTORE_PASSWORD}'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml
+
+
+
 ###########replace the "tomcat6" by "tomcat7" on the web.xml###################
 sed -i.bak  's/\(<param-value>\/var\/lib\/\)tomcat6/\1'tomcat7'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/web.xml
 
@@ -232,11 +248,18 @@ sed -i.bak --regexp-extended  "s/(cn\.server\.publiccert\.filename=).*/\1${PUBLI
 sed -i.bak --regexp-extended  "s/(cn\.server\.privatekey\.filename=).*/\1${KEY_FILE_ESC}/;" ${TOMCAT_HOME}/webapps/portal/WEB-INF/portal.properties
 
 ## configure the portal to use ORCID API credentials
-db_get dataone-cn-os-core/orcid.client.secret
+db_get dataone-cn-portal/orcid.client.id
+ORCID_CLIENT_ID=${RET}
+ORCID_CLIENT_ID_ESC=${ORCID_CLIENT_ID//\//\\\/}
+sed -i.bak --regexp-extended  "s/(orcid\.client\.id=).*/\1${ORCID_CLIENT_ID_ESC}/;" ${TOMCAT_HOME}/webapps/portal/WEB-INF/portal.properties
+
+db_get dataone-cn-portal/orcid.client.secret
 ORCID_CLIENT_SECRET=${RET}
 ORCID_CLIENT_SECRET_ESC=${ORCID_CLIENT_SECRET//\//\\\/}
 sed -i.bak --regexp-extended  "s/(orcid\.client\.secret=).*/\1${ORCID_CLIENT_SECRET_ESC}/;" ${TOMCAT_HOME}/webapps/portal/WEB-INF/portal.properties
 
+db_reset dataone-cn-portal/orcid.client.id  # clear the cached orcid id
+db_reset dataone-cn-portal/orcid.client.secret  # clear the cached orcid secret
 
 ###############################################################################
 # Configure Tomcat
