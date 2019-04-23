@@ -48,8 +48,10 @@ DB_NAME=oauth
 DB_USER=oa4mp
 DB_PASS=oa4mp
 
-KEY_DIR=/etc/ssl/private
-CERT_DIR=/etc/ssl/certs
+db_get dataone-cn-os-core/cn.hostname
+HOST_NAME=${RET}
+KEY_DIR=/etc/letsencrypt/live/${HOST_NAME}
+CERT_DIR=/etc/letsencrypt/live/${HOST_NAME}
 
 HAZELCAST_PORT=5703
 
@@ -225,23 +227,10 @@ db_get dataone-cn-os-core/cn.server.privatekey.filename
 KEY_FILENAME=${RET}
 KEY_FILE=${KEY_DIR}'/'${KEY_FILENAME}
 
-PK8_KEY_FILE=${KEY_FILE}.pk8
-# make PK8 format for private key
-openssl pkcs8 -topk8 -in ${KEY_FILE} -nocrypt -out ${PK8_KEY_FILE}
-chown tomcat8:ssl-cert ${PK8_KEY_FILE}
-chmod 0650 ${PK8_KEY_FILE}
 # get the correct public key (NOT the cert) for the env
 db_get dataone-cn-os-core/cn.server.publiccert.filename
 SERVER_CERT_FILENAME=${RET}
 PUBLIC_SERVER_CERT=${CERT_DIR}'/'${SERVER_CERT_FILENAME}
-
-PUBLIC_KEY_FILE=${PUBLIC_SERVER_CERT}.publickey
-openssl x509 -in ${PUBLIC_SERVER_CERT} -pubkey -noout > ${PUBLIC_KEY_FILE}
-# set these in the configuration
-PK8_KEY_FILE=${PK8_KEY_FILE//\//\\\/}
-sed -i.bak  's/\(<privateKeyFile>\)PRIVATE_KEY_PATH/\1'${PK8_KEY_FILE}'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml
-PUBLIC_KEY_FILE=${PUBLIC_KEY_FILE//\//\\\/}
-sed -i.bak  's/\(<publicKeyFile>\)PUBLIC_KEY_PATH/\1'${PUBLIC_KEY_FILE}'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml
 
 ## configure the portal to use public cert and private key for token generation/verification
 PUBLIC_SERVER_CERT_ESC=${PUBLIC_SERVER_CERT//\//\\\/}
@@ -376,15 +365,12 @@ fi
 # make sure it is not commented out
 sed -i.bak  "s/#\(ssl\s*\=.\)/\1/;" ${PG_CONF}/postgresql.conf
 
-
-
-rm ${PG_DATA}/server.key
-cp ${KEY_FILE} ${PG_DATA}/server.key
-chown postgres:postgres ${PG_DATA}/server.key
-chmod 0600 ${PG_DATA}/server.key
-rm ${PG_DATA}/server.crt
-cp ${PUBLIC_SERVER_CERT} ${PG_DATA}/server.crt
-chown postgres:postgres ${PG_DATA}/server.crt
+# edit the postgresql.conf to use the given certificate/key
+sed -i.bak --regexp-extended  "s/(ssl_cert_file\s*=).*/\1 \'${PUBLIC_SERVER_CERT_ESC}\'/;" ${PG_CONF}/postgresql.conf
+sed -i.bak --regexp-extended  "s/(ssl_key_file\s*=).*/\1 \'${KEY_FILE_ESC}\'/;" ${PG_CONF}/postgresql.conf
+# make sure it is not commented out
+sed -i.bak  "s/#\(ssl_cert_file\)/\1 /;" ${PG_CONF}/postgresql.conf
+sed -i.bak  "s/#\(ssl_key_file\)/\1 /;" ${PG_CONF}/postgresql.conf
 
 ## Restart the postgres db
 log "Restarting postgres database"
