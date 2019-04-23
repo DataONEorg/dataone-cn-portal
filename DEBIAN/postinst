@@ -165,8 +165,10 @@ sed -i.bak  's/\(password=\"\)JAVA_KEYSTORE_PASSWORD/\1'${JAVA_KEYSTORE_PASSWORD
 
 
 
-###########replace the "tomcat7" by "tomcat8" on the web.xml###################
+###########replace the "tomcat7" by "tomcat8" on the web.xml, client.xml and portal.properties###################
 sed -i.bak  's/\(<param-value>\/var\/lib\/\)tomcat7/\1'tomcat8'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/web.xml
+sed -i.bak  's/\(\/var\/log\/\)tomcat7/\1'tomcat8'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/client.xml
+sed -i.bak  's/\(\/var\/lib\/\)tomcat7/\1'tomcat8'/;' ${TOMCAT_HOME}/webapps/portal/WEB-INF/portal.properties
 
 ## switched postgresql host property to localhost (redmine 7943) so this config is not needed anymore
 ## configure to hit only a single PG instance - defualt to first in ip list
