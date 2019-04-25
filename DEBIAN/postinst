@@ -48,7 +48,7 @@ DB_NAME=oauth
 DB_USER=oa4mp
 DB_PASS=oa4mp
 
-db_get dataone-cn-os-core/cn.hostname
+db_get dataone-cn-os-core/cn.router.hostname
 HOST_NAME=${RET}
 KEY_DIR=/etc/letsencrypt/live/${HOST_NAME}
 CERT_DIR=/etc/letsencrypt/live/${HOST_NAME}
