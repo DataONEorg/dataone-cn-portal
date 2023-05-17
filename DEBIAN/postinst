@@ -10,7 +10,7 @@ fi
 
 
 TOMCAT=tomcat9
-OLD_TOMCAT=tomcat8
+OLD_TOMCAT=tomcat7
 TOMCAT_USER=tomcat
 TOMCAT_HOME=/var/lib/${TOMCAT}
 APACHE_CONF=/etc/apache2
