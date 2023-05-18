@@ -330,6 +330,9 @@ cp ${SCRIPT_DIR}/${JK_CONF} ${APACHE_CONF}/jk_mount/
 ###############################################################################
 # Configure Postgres
 ###############################################################################
+## Add the postgres user to the root group
+usermod -a -G root ${PG_USER}
+
 ## create portal database and user
 log "Creating ${DB_NAME} database schema"
 su ${PG_USER} -c "dropdb ${DB_NAME}"
