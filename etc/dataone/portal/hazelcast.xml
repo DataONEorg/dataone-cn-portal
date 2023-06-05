@@ -63,7 +63,7 @@
   
   <!-- for replicating Tomcat sessions -->
   <map name="d1PortalSessions">
-    <backup-count>3</backup-count>
+    <backup-count>2</backup-count>
     <eviction-policy>LRU</eviction-policy>
     <max-size policy="cluster_wide_map_size">0</max-size>
     <eviction-percentage>25</eviction-percentage>
